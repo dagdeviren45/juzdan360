@@ -15,13 +15,13 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => PortfolioProvider()..init()),
       ],
-      child: const Portfoy360App(),
+      child: const Juzdan360App(),
     ),
   );
 }
 
-class Portfoy360App extends StatelessWidget {
-  const Portfoy360App({super.key});
+class Juzdan360App extends StatelessWidget {
+  const Juzdan360App({super.key});
 
   @override
   Widget build(BuildContext context) {
