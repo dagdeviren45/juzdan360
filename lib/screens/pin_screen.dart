@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../core/constants.dart';
 import 'home_screen.dart';
 
@@ -39,9 +39,7 @@ class _PinScreenState extends State<PinScreen> {
   }
 
   void _verifyPin() async {
-    // Small delay to let user see 4th dot
     await Future.delayed(const Duration(milliseconds: 200));
-
     if (!mounted) return;
 
     if (_enteredPin == widget.expectedPin) {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../core/constants.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -20,9 +20,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
+    final box = await Hive.openBox('settings');
     setState(() {
-      _currentPin = prefs.getString('app_pin');
+      _currentPin = box.get('app_pin') as String?;
     });
   }
 
@@ -57,10 +57,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PIN 4 haneli olmalıdır.'), backgroundColor: Colors.red));
                 return;
               }
-              final prefs = await SharedPreferences.getInstance();
+              final box = await Hive.openBox('settings');
               if (isRemove) {
                 if (val == _currentPin) {
-                  await prefs.remove('app_pin');
+                  await box.delete('app_pin');
                   if (context.mounted) Navigator.pop(context);
                   _loadSettings();
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PIN kaldırıldı.'), backgroundColor: Colors.green));
@@ -68,7 +68,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mevcut PIN hatalı.'), backgroundColor: Colors.red));
                 }
               } else {
-                await prefs.setString('app_pin', val);
+                await box.put('app_pin', val);
                 if (context.mounted) Navigator.pop(context);
                 _loadSettings();
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PIN güncellendi.'), backgroundColor: Colors.green));

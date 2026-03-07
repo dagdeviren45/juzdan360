@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../core/constants.dart';
 import 'home_screen.dart';
 import 'pin_screen.dart';
@@ -33,8 +33,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     Timer(const Duration(seconds: 3), () async {
       if (!mounted) return;
       
-      final prefs = await SharedPreferences.getInstance();
-      final pin = prefs.getString('app_pin');
+      // Use Hive instead of SharedPreferences
+      final box = await Hive.openBox('settings');
+      final pin = box.get('app_pin') as String?;
       
       Widget nextScreen = pin != null ? PinScreen(expectedPin: pin) : const HomeScreen();
 
