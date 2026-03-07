@@ -47,7 +47,7 @@ class PortfolioProvider extends ChangeNotifier {
     _isPolling = true;
     Future.doWhile(() async {
       try {
-        await Future.delayed(const Duration(seconds: 30));
+        await Future.delayed(const Duration(seconds: 1));
         if (!_isPolling) return false;
         await refreshPrices();
       } catch (e) {
