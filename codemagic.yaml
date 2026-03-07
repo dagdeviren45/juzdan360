@@ -3,7 +3,7 @@ workflows:
     name: iOS Workflow
     max_build_duration: 60
     environment:
-      flutter: stable
+      flutter: 3.29.1
       xcode: latest
       cocoapods: default
     scripts:
@@ -11,11 +11,12 @@ workflows:
         script: xcode-project use-profiles
       - name: Flutter pub get
         script: flutter packages pub get
+      - name: Pod install
+        script: |
+          cd ios && pod install --repo-update
       - name: Build iOS
         script: |
           flutter build ipa --release \
-            --build-name=49.0.0 \
-            --build-number=49 \
             --export-options-plist=/Users/builder/export_options.plist
     artifacts:
       - build/ios/ipa/*.ipa
