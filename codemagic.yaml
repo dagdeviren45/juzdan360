@@ -14,9 +14,11 @@ workflows:
       - name: Pod install
         script: |
           cd ios && pod install --repo-update
-      - name: Build iOS
+      - name: Build iOS Release
         script: |
-          flutter build ipa --release \
+          flutter build ipa \
+            --release \
+            --no-tree-shake-icons \
             --export-options-plist=/Users/builder/export_options.plist
     artifacts:
       - build/ios/ipa/*.ipa
