@@ -17,13 +17,18 @@ class ApiService {
   static final Map<String, PriceData> _cachedPrices = {};
   static DateTime _lastCryptoFetch = DateTime.fromMillisecondsSinceEpoch(0);
 
-  Future<Map<String, PriceData>> fetchAllPrices() async {
+  Future<Map<String, PriceData>> fetchAllPrices({bool isSerbestPiyasa = false}) async {
     Map<String, PriceData> prices = {};
     try {
-      prices = await fetchAnlikAltin();
-      print('AnlikAltin success');
+      if (isSerbestPiyasa) {
+        prices = await fetchSerbestPiyasa();
+        print('SerbestPiyasa success');
+      } else {
+        prices = await fetchAnlikAltin();
+        print('AnlikAltin success');
+      }
     } catch (e) {
-      print('AnlikAltin failed: $e');
+      print('Primary source failed: $e');
       try {
         prices = await fetchHaremAltin();
       } catch (e2) {
@@ -49,6 +54,41 @@ class ApiService {
     Map<String, PriceData> combined = Map.from(_cachedPrices);
     _applyCrossCalculations(combined);
     return combined;
+  }
+
+  Future<Map<String, PriceData>> fetchSerbestPiyasa() async {
+    final cacheBuster = DateTime.now().millisecondsSinceEpoch;
+    final String url = 'https://anlikaltinfiyatlari.com/socket/total.php?_=$cacheBuster';
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {'Cache-Control': 'no-cache', 'Pragma': 'no-cache'},
+    ).timeout(const Duration(seconds: 10));
+
+    if (response.statusCode != 200) {
+      throw Exception('SerbestPiyasa Error: ${response.statusCode}');
+    }
+
+    final Map<String, dynamic> data = json.decode(response.body);
+    final Map<String, PriceData> prices = {};
+
+    final usd = double.tryParse(data['USDTRY']?.toString() ?? '0') ?? 0.0;
+    final eur = double.tryParse(data['EURTRY']?.toString() ?? '0') ?? 0.0;
+    final gbp = double.tryParse(data['GBPTRY']?.toString() ?? '0') ?? 0.0;
+    final ons = double.tryParse(data['XAUUSD']?.toString() ?? '0') ?? 0.0;
+    final gumusOns = double.tryParse(data['XAGUSD']?.toString() ?? '0') ?? 0.0;
+
+    // Calculation: (ONS * USDTRY) / 31.1
+    final gramHas = (ons * usd) / 31.1;
+
+    prices['usd'] = PriceData(name: 'DOLAR', symbol: 'usd', buy: usd, sell: usd, change: 0);
+    prices['eur'] = PriceData(name: 'EURO', symbol: 'eur', buy: eur, sell: eur, change: 0);
+    prices['gbp'] = PriceData(name: 'POUND', symbol: 'gbp', buy: gbp, sell: gbp, change: 0);
+    prices['ons'] = PriceData(name: 'ALTIN ONS \$', symbol: 'ons', buy: ons, sell: ons, change: 0);
+    prices['gram_has'] = PriceData(name: 'HAS ALTIN', symbol: 'gram_has', buy: gramHas, sell: gramHas, change: 0);
+    prices['gram'] = PriceData(name: 'GRAM ALTIN', symbol: 'gram', buy: gramHas, sell: gramHas, change: 0);
+    prices['gumus'] = PriceData(name: 'GÜMÜŞ GRAM', symbol: 'gumus', buy: (gumusOns * usd) / 31.1, sell: (gumusOns * usd) / 31.1, change: 0);
+
+    return prices;
   }
 
   Future<Map<String, PriceData>> fetchAnlikAltin() async {

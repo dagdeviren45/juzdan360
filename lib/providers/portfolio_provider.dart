@@ -18,7 +18,11 @@ class PortfolioProvider extends ChangeNotifier {
   String? get error => _error;
   DateTime get lastUpdate => _lastUpdate;
 
+  bool _isSerbestPiyasa = false;
+  bool get isSerbestPiyasa => _isSerbestPiyasa;
+
   Box<PortfolioItem>? _box;
+  Box? _settingsBox;
   bool _isPolling = false;
 
   Future<void> init() async {
@@ -30,6 +34,8 @@ class PortfolioProvider extends ChangeNotifier {
       if (!Hive.isAdapterRegistered(1)) Hive.registerAdapter(PortfolioItemAdapter());
       
       _box = await Hive.openBox<PortfolioItem>('portfolio');
+      _settingsBox = await Hive.openBox('settings');
+      _isSerbestPiyasa = _settingsBox!.get('isSerbestPiyasa', defaultValue: false);
       _holdings = _box!.values.toList();
       
       await refreshPrices();
@@ -65,12 +71,19 @@ class PortfolioProvider extends ChangeNotifier {
 
   Future<void> refreshPrices() async {
     try {
-      _prices = await _apiService.fetchAllPrices();
+      _prices = await _apiService.fetchAllPrices(isSerbestPiyasa: _isSerbestPiyasa);
       _lastUpdate = DateTime.now();
       _error = null;
     } catch (e) {
       _error = 'Fiyatlar güncellenemedi: $e';
     }
+    notifyListeners();
+  }
+
+  Future<void> setDataSource(bool isSerbest) async {
+    _isSerbestPiyasa = isSerbest;
+    await _settingsBox?.put('isSerbestPiyasa', isSerbest);
+    await refreshPrices();
     notifyListeners();
   }
 

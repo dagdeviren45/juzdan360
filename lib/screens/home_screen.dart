@@ -58,9 +58,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                 ),
-                Text(
-                  'Son Güncelleme: ${DateFormat('HH:mm:ss').format(provider.lastUpdate)}',
-                  style: const TextStyle(fontSize: 10, color: AppConstants.textGrey),
+                Row(
+                  children: [
+                    Text(
+                      'Son Güncelleme: ${DateFormat('HH:mm:ss').format(provider.lastUpdate)}',
+                      style: const TextStyle(fontSize: 10, color: AppConstants.textGrey),
+                    ),
+                    if (!provider.isSerbestPiyasa && (DateTime.now().weekday == DateTime.saturday || DateTime.now().weekday == DateTime.sunday))
+                      Container(
+                        margin: const EdgeInsets.only(left: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: Colors.red.withOpacity(0.5), width: 0.5),
+                        ),
+                        child: const Text('H.SONU KAPALI', style: TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.red)),
+                      ),
+                  ],
                 ),
               ],
             ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
 import '../core/constants.dart';
+import '../providers/portfolio_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -106,6 +108,57 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onPressed: () => _showPinDialog(context, isRemove: true),
                   )
                 : null,
+          ),
+          const Divider(),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text('VERİ KAYNAĞI', style: TextStyle(color: AppConstants.textGrey, fontSize: 12, fontWeight: FontWeight.bold)),
+          ),
+          Consumer<PortfolioProvider>(
+            builder: (context, provider, child) {
+              return Column(
+                children: [
+                  RadioListTile<bool>(
+                    value: false,
+                    groupValue: provider.isSerbestPiyasa,
+                    onChanged: (val) => provider.setDataSource(val!),
+                    title: const Text('Kapalı Çarşı'),
+                    subtitle: const Text('Daha yüksek makas aralığı (Haftasonu Kapalı)', style: TextStyle(fontSize: 12)),
+                    activeColor: AppConstants.primaryGold,
+                  ),
+                  RadioListTile<bool>(
+                    value: true,
+                    groupValue: provider.isSerbestPiyasa,
+                    onChanged: (val) => provider.setDataSource(val!),
+                    title: const Text('Serbest Piyasa'),
+                    subtitle: const Text('Anlık küresel veriler (7/24 Canlı)', style: TextStyle(fontSize: 12)),
+                    activeColor: AppConstants.primaryGold,
+                  ),
+                  if (!provider.isSerbestPiyasa && (DateTime.now().weekday == DateTime.saturday || DateTime.now().weekday == DateTime.sunday))
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: const [
+                          Icon(Icons.warning_amber_rounded, color: Colors.red, size: 20),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Dikkat: Kapalı Çarşı haftasonu kapalıdır. Canlı fiyatlar için Serbest Piyasa\'yı seçebilirsiniz.',
+                              style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
           const Divider(),
         ],
