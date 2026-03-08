@@ -52,8 +52,12 @@ class ApiService {
   }
 
   Future<Map<String, PriceData>> fetchAnlikAltin() async {
-    const String url = 'https://anlikaltinfiyatlari.com/js/fetch/kapalicarsi.php';
-    final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 10));
+    final cacheBuster = DateTime.now().millisecondsSinceEpoch;
+    final String url = 'https://anlikaltinfiyatlari.com/js/fetch/kapalicarsi.php?_=$cacheBuster';
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {'Cache-Control': 'no-cache', 'Pragma': 'no-cache'},
+    ).timeout(const Duration(seconds: 10));
 
     if (response.statusCode != 200) {
       throw Exception('AnlikAltin Error: ${response.statusCode}');
@@ -176,9 +180,10 @@ class ApiService {
   }
 
   Future<Map<String, PriceData>> fetchHaremAltin() async {
+    final cacheBuster = DateTime.now().millisecondsSinceEpoch;
     final response = await http.post(
-      Uri.parse('https://www.haremaltin.com/dashboard/ajax/doviz'),
-      headers: headers,
+      Uri.parse('https://www.haremaltin.com/dashboard/ajax/doviz?_=$cacheBuster'),
+      headers: {...headers, 'Cache-Control': 'no-cache'},
       body: 'dil_kodu=tr',
     ).timeout(const Duration(seconds: 10));
 
@@ -215,8 +220,11 @@ class ApiService {
   }
 
   Future<Map<String, PriceData>> fetchTruncgil() async {
-    final response = await http.get(Uri.parse('https://finans.truncgil.com/today.json'))
-        .timeout(const Duration(seconds: 10));
+    final cacheBuster = DateTime.now().millisecondsSinceEpoch;
+    final response = await http.get(
+      Uri.parse('https://finans.truncgil.com/today.json?_=$cacheBuster'),
+      headers: {'Cache-Control': 'no-cache'},
+    ).timeout(const Duration(seconds: 10));
     final data = json.decode(response.body);
     
     final Map<String, PriceData> prices = {};
@@ -244,7 +252,11 @@ class ApiService {
 
   Future<Map<String, PriceData>> fetchCryptoPrices() async {
     const ids = 'bitcoin,ethereum,litecoin,ripple,solana';
-    final response = await http.get(Uri.parse('https://api.coingecko.com/api/v3/coins/markets?vs_currency=try&ids=$ids&order=market_cap_desc&sparkline=false&price_change_percentage=24h'));
+    final cacheBuster = DateTime.now().millisecondsSinceEpoch;
+    final response = await http.get(
+      Uri.parse('https://api.coingecko.com/api/v3/coins/markets?vs_currency=try&ids=$ids&order=market_cap_desc&sparkline=false&price_change_percentage=24h&_=$cacheBuster'),
+      headers: {'Cache-Control': 'no-cache'},
+    );
     final decoded = json.decode(response.body);
     if (decoded is! List) {
       throw Exception('Crypto API returned unexpected format: $decoded');
