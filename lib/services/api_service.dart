@@ -80,13 +80,17 @@ class ApiService {
     // Calculation: (ONS * USDTRY) / 31.1
     final gramHas = (ons * usd) / 31.1;
 
-    prices['usd'] = PriceData(name: 'DOLAR', symbol: 'usd', buy: usd, sell: usd, change: 0);
-    prices['eur'] = PriceData(name: 'EURO', symbol: 'eur', buy: eur, sell: eur, change: 0);
-    prices['gbp'] = PriceData(name: 'POUND', symbol: 'gbp', buy: gbp, sell: gbp, change: 0);
+    // Real-time market spread factors (approximate)
+    const forexSpread = 0.002; // %0.2
+    const goldSpread = 0.005;  // %0.5
+
+    prices['usd'] = PriceData(name: 'DOLAR', symbol: 'usd', buy: usd * (1 - forexSpread), sell: usd * (1 + forexSpread), change: 0);
+    prices['eur'] = PriceData(name: 'EURO', symbol: 'eur', buy: eur * (1 - forexSpread), sell: eur * (1 + forexSpread), change: 0);
+    prices['gbp'] = PriceData(name: 'POUND', symbol: 'gbp', buy: gbp * (1 - forexSpread), sell: gbp * (1 + forexSpread), change: 0);
     prices['ons'] = PriceData(name: 'ALTIN ONS \$', symbol: 'ons', buy: ons, sell: ons, change: 0);
-    prices['gram_has'] = PriceData(name: 'HAS ALTIN', symbol: 'gram_has', buy: gramHas, sell: gramHas, change: 0);
-    prices['gram'] = PriceData(name: 'GRAM ALTIN', symbol: 'gram', buy: gramHas, sell: gramHas, change: 0);
-    prices['gumus'] = PriceData(name: 'GÜMÜŞ GRAM', symbol: 'gumus', buy: (gumusOns * usd) / 31.1, sell: (gumusOns * usd) / 31.1, change: 0);
+    prices['gram_has'] = PriceData(name: 'HAS ALTIN', symbol: 'gram_has', buy: gramHas * (1 - goldSpread), sell: gramHas * (1 + goldSpread), change: 0);
+    prices['gram'] = PriceData(name: 'GRAM ALTIN', symbol: 'gram', buy: gramHas * (1 - goldSpread), sell: gramHas * (1 + goldSpread), change: 0);
+    prices['gumus'] = PriceData(name: 'GÜMÜŞ GRAM', symbol: 'gumus', buy: ((gumusOns * usd) / 31.1) * 0.98, sell: ((gumusOns * usd) / 31.1) * 1.02, change: 0);
 
     return prices;
   }
